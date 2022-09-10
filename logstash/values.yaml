@@ -1,0 +1,44 @@
+image: docker.elastic.co/logstash/logstash-oss
+
+extraEnvs:
+  - name: "ELASTICSEARCH_USERNAME"
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: username
+  - name: "ELASTICSEARCH_PASSWORD"
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: password
+
+antiAffinity: "soft" # CHANGE IN PRODUCTION
+
+persistence:
+  enabled: true
+
+resources:
+  requests:
+    cpu: "300m"
+  limits:
+    cpu: "300m"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: logstash.local
+      paths:
+        - path: /beats
+          servicePort: 5044
+        - path: /http
+          servicePort: 8080
+
+logstashPipeline:
+  logstash.conf: |
+    input {
+      exec {
+        command => "uptime"
+        interval => 30
+      }
+    }
+    output { stdout { } }

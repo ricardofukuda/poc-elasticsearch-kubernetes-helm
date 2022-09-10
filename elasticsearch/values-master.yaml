@@ -1,0 +1,75 @@
+clusterName: "elasticsearch"
+nodeGroup: "master"
+
+replicas: 1
+
+roles:
+  master: "true"
+  data: "true"
+  transform: "true"
+  remote_cluster_client: "false"
+  ml: "false"
+
+persistence:
+  enabled: true
+  labels:
+    enabled: true
+
+esJavaOpts: "-Xms1g -Xmx1g" # SHOULD BE PROPORTIONAL TO THE POD MEMORY
+resources:
+  requests:
+    cpu: "250m"
+    memory: "2Gi"
+  limits:
+    cpu: "500m"
+    memory: "2Gi"
+
+antiAffinity: "soft" # For local development
+
+volumeClaimTemplate:
+  resources:
+    requests:
+      storage: 1Gi
+
+#clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+
+esConfig:
+  elasticsearch.yml: |
+    xpack.security.enabled: true
+    xpack.security.transport.ssl.enabled: true
+    xpack.security.transport.ssl.verification_mode: certificate
+    xpack.security.transport.ssl.keystore.path: /usr/share/elasticsearch/config/certs/elastic-certificates.p12
+    xpack.security.transport.ssl.truststore.path: /usr/share/elasticsearch/config/certs/elastic-certificates.p12
+    xpack.security.http.ssl.enabled: false
+    xpack.security.http.ssl.truststore.path: /usr/share/elasticsearch/config/certs/elastic-certificates.p12
+    xpack.security.http.ssl.keystore.path: /usr/share/elasticsearch/config/certs/elastic-certificates.p12
+    xpack.security.authc.api_key.enabled: true
+
+extraEnvs:
+  - name: discovery.type # For local development
+    value: single-node
+  - name: cluster.initial_master_nodes # For local development
+    value: null
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: password
+  - name: ELASTICSEARCH_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: username
+
+secretMounts:
+  - name: elastic-certificates
+    secretName: elastic-certificates
+    path: /usr/share/elasticsearch/config/certs
+
+# INGRESS:
+ingress:
+  enabled: true
+  hosts:
+    - host: elastic-master.local
+      paths:
+        - path: /

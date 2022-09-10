@@ -1,0 +1,62 @@
+clusterName: "elasticsearch"
+
+nodeGroup: "data"
+replicas: 1
+
+masterService: "elasticsearch-master"
+
+roles:
+  master: "false"
+  data: "true"
+  transform: "true"
+  remote_cluster_client: "false"
+  ml: "false"
+
+persistence:
+  enabled: true
+  labels:
+    enabled: true
+
+volumeClaimTemplate:
+  resources:
+    requests:
+      storage: 1Gi # Increase in production
+
+antiAffinity: "soft" # REMOVE ON PRODUCTION
+
+esJavaOpts: "-Xms1g -Xmx1g" # SHOULD BE PROPORTIONAL TO THE POD MEMORY
+resources:
+  requests:
+    cpu: "100m"
+    memory: "2Gi"
+  limits:
+    cpu: "200m"
+    memory: "2Gi"
+
+protocol: http
+
+extraEnvs:
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: password
+  - name: ELASTICSEARCH_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: elastic-credentials
+        key: username
+
+secretMounts:
+  - name: elastic-certificates
+    secretName: elastic-certificates
+    path: /usr/share/elasticsearch/config/certs
+
+
+# INGRESS:
+ingress:
+  enabled: true
+  hosts:
+    - host: elastic-data.local
+      paths:
+        - path: /
