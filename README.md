@@ -6,6 +6,7 @@ helm repo add elastic https://helm.elastic.co
 It's going to automatically generate and apply the secrets into "elk" kubernetes namespace.
 
 kubectl create namespace elk
+
 sh ./elasticsearch/scripts/setup-security.sh
 
 ## Install ElasticSearch
