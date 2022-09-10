@@ -12,6 +12,9 @@ roles:
   remote_cluster_client: "false"
   ml: "false"
 
+labels:
+  cluster: elasticsearch
+  
 persistence:
   enabled: true
   labels:

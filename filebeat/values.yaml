@@ -34,7 +34,7 @@ daemonset:
       setup.template.pattern: "k8s-test-%{[agent.version]}-*"
       setup.template.overwrite: false
       setup.template.settings:
-        index.number_of_shards: 2
+        index.number_of_shards: 3
         index.number_of_replicas: 0
       monitoring:
         enabled: true
